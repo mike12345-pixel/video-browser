@@ -1,28 +1,55 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
-  </div>
+    <div>
+        <!-- listen for custom events coming from the SearchBar component -->
+        <SearchBar @termChange="onTermChange"></SearchBar>
+        <!-- passing props using v-bind directive. :videos is shorthand for v-bind:videos -->
+        <VideoList :videos="videos"></VideoList>
+    </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+    import SearchBar from './components/SearchBar';
+    import VideoList from './components/VideoList'
+    import axios from 'axios';
+    const API_KEY='AIzaSyD2XekwcAFMhjtQRimIyoDGxjCXzd6x598';
 
-export default {
-  name: 'App',
-  components: {
-    HelloWorld
-  }
-}
+
+    export default {
+        name: 'App',
+        components: {
+            SearchBar,
+            VideoList,
+            },
+        data() {
+            // initial state
+            return {
+                videos: [],
+            };
+        },
+        methods: {
+            // event handler
+            onTermChange(searchTerm) {
+                axios.get('https://www.googleapis.com/youtube/v3/search', {
+                    params: {
+                        key: API_KEY,
+                        type: 'video',
+                        part: 'snippet', // how much detail to return
+                        q: searchTerm, // search query
+                        }
+                }).then(
+                    // callback for success
+                    (response) => {
+                    // push data from api call into state
+                    // data property is changed so the app automatically rerenders with each call
+                    this.videos = response.data.items;
+                    },
+                    // callback for failure
+                    () => {
+                        console.log("unsuccessful youtube request")
+                    });
+            }
+        }
+    };
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<!-- import the component, register it under the components property, then use it -->
